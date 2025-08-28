@@ -265,7 +265,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
 class DotIndicator extends Decoration {
   final Color? color;
-  DotIndicator({this.color});
+  const DotIndicator({this.color});
 
   @override
   BoxPainter createBoxPainter([VoidCallback? onChanged]) {
