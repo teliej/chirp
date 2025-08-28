@@ -1,0 +1,42 @@
+lib/
+├── main.dart                    # App entry point with Firebase init
+├── app.dart                     # Main app widget with routing
+├── firebase_options.dart        # Firebase configuration
+├── core/
+│   ├── constants/
+│   │   ├── app_colors.dart     # Color palette
+│   │   └── app_theme.dart      # Light/dark themes
+│   ├── widgets/
+│   │   └── loading_indicator.dart
+│   ├── providers/
+│   │   └── providers.dart      # Provider configuration
+│   └── routes/
+│       └── app_router.dart     # Navigation with GoRouter
+├── providers/
+│   ├── auth_provider.dart      # Authentication state
+│   ├── theme_provider.dart     # Theme management
+│   ├── post_provider.dart      # Posts/threads state
+│   └── user_provider.dart      # User data management
+├── models/
+│   ├── user_model.dart         # User data model
+│   └── post_model.dart         # Post/thread model
+├── services/
+│   ├── auth_service.dart       # Firebase Auth operations
+│   ├── post_service.dart       # Posts CRUD operations
+│   └── user_service.dart       # User profile operations
+└── views/
+    ├── auth/
+    │   ├── auth_wrapper.dart   # Auth state handler
+    │   ├── login_page.dart     # Sign in screen
+    │   └── signup_page.dart    # Sign up screen
+    ├── home/
+    │   └── home_page.dart      # home page, holding the scafold and tabs
+    ├── feed/
+    │   └── feed_page.dart   # main feed
+    ├── profile/
+    │   └── profile_page.dart   # User profiles
+    ├── notifications/
+    │   └── notifications_page.dart
+    └── post/
+        ├── post_page.dart      # Post details
+        └── create_post_page.dart

@@ -1,0 +1,108 @@
+{
+  "chats": [
+    {
+      "chatId": "user123@wa",
+      "displayName": "John Doe",
+      "profileImage": "https://example.com/profiles/john.jpg",
+      "lastMessage": {
+        "messageId": "msg001",
+        "senderId": "user123@wa",
+        "content": "Hey, what's up?",
+        "type": "text",
+        "timestamp": 1725403488,
+        "status": "read"
+      },
+      "unreadCount": 1,
+      "isPinned": false,
+      "archived": false,
+      "isMuted": false
+    },
+    {
+      "chatId": "group456@wa",
+      "displayName": "John Doe",
+      "profileImage": "https://example.com/profiles/group.jpg",
+      "lastMessage": {
+        "messageId": "msg002",
+        "senderId": "user789@wa",
+        "content": "~ Assignment will be submited at 9am tomorrow",
+        "type": "text",
+        "timestamp": 1725404000,
+        "status": "delivered"
+      },
+      "unreadCount": 99,
+      "isPinned": true,
+      "archived": false,
+      "isMuted": true
+    }
+  ],
+  "messages": {
+    "user123@wa": [ 
+      {
+        "messageId": "msg001",
+        "senderId": "user123@wa",
+        "content": "Hey, what's up?",
+        "type": "text",
+        "timestamp": 1725403488,
+        "status": "read"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "me",
+        "content": "All good. You?",
+        "type": "text",
+        "timestamp": 1725403500,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg001",
+        "senderId": "user123@wa",
+        "content": "I actually want to ask something",
+        "type": "text",
+        "timestamp": 1725403488,
+        "status": "read"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "me",
+        "content": "shoot",
+        "type": "text",
+        "timestamp": 1725403500,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "user123@wa",
+        "content": "ok",
+        "type": "text",
+        "timestamp": 1725403500,
+        "status": "sent"
+      }
+    ],
+    "group456@wa": [
+      {
+        "messageId": "msg001",
+        "senderId": "user123@wa",
+        "content": "Who dey here?",
+        "type": "text",
+        "timestamp": 1725403488,
+        "status": "read"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "me@wa",
+        "content": "See this egbon",
+        "type": "text",
+        "timestamp": 1725403500,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "me",
+        "content": "calm guys, let wait for the admin",
+        "type": "text",
+        "timestamp": 1725403500,
+        "status": "sent"
+      }
+    ]
+  }
+}
