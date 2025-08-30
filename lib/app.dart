@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
-// import 'views/auth/auth_wrapper.dart';
+import 'views/auth/auth_wrapper.dart';
+import 'views/auth/login_page.dart';
+import 'views/auth/verify_email_page.dart';
 import 'views/home_page.dart';
 import 'app_theme/theme.dart';
 
@@ -21,7 +23,15 @@ class MyApp extends StatelessWidget {
       themeMode: themeProvider.themeMode, // to switch on command
       // themeMode: ThemeMode.system, // to follow system setting
       // home: const AuthWrapper(),
-      home: const HomePage(),
+      // home: const HomePage(),
+
+      initialRoute: '/auth-wrapper', // starting screen
+      routes: {
+        '/auth-wrapper': (context) => const AuthWrapper(),
+        '/login': (context) => const LoginPage(),
+        '/verify-email': (context) => const VerifyEmailPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 

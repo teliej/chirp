@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'verify_email_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -9,196 +11,146 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
 
-  bool isLogin = true; // toggle between login and register
+  bool isLogin = true; 
+  String? errorMessage; // 🔥 Store auth errors
 
-  void _submit() async {
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return; // Stop if invalid inputs
+
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (isLogin) {
-      await _authService.signIn(email, password);
-    } else {
-      await _authService.register(email, password);
+    try {
+      if (isLogin) {
+        await _authService.signIn(email, password);
+
+        // 🔥 Check email verification status
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null && !user.emailVerified) {
+          // system may be using a cached currentUser
+          await user.reload(); // refresh user state
+          await user.sendEmailVerification();
+          Navigator.pushReplacementNamed(context, '/verify-email'),
+          return;
+        }
+
+        // Navigate to home if verified
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        await _authService.register(email, password);
+
+        // 🔥 After register, always go to verification page
+        Navigator.pushReplacementNamed(context, '/verify-email'),
+      }
+
+      setState(() => errorMessage = null); // clear errors
+    } catch (e) {
+      // 🔥 Show Firebase or custom errors in UI
+      setState(() {
+        errorMessage = e.toString();
+      });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(isLogin ? "Login" : "Register", style: const TextStyle(fontSize: 28)),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submit,
-              child: Text(isLogin ? "Login" : "Register"),
-            ),
-            TextButton(
-              onPressed: () => setState(() => isLogin = !isLogin),
-              child: Text(isLogin ? "Create account" : "I have an account"),
-            ),
-          ],
+        child: Form(
+          key: _formKey, // 🔥 Use Form for validation
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                isLogin ? "Login" : "Register",
+                style: const TextStyle(fontSize: 28),
+              ),
+              const SizedBox(height: 20),
+
+              // 🔥 EMAIL FIELD
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: "Email"),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Email is required";
+                  }
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                  if (!emailRegex.hasMatch(value)) {
+                    return "Enter a valid email";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10),
+
+              // 🔥 PASSWORD FIELD
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(labelText: "Password"),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Password is required";
+                  }
+                  if (value.length < 6) {
+                    return "Password must be at least 6 characters";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // 🔥 AUTH ERROR DISPLAY
+              if (errorMessage != null)
+                Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+
+              const SizedBox(height: 10),
+
+              // 🔥 SUBMIT BUTTON
+              ElevatedButton(
+                onPressed: _submit,
+                child: Text(isLogin ? "Login" : "Register"),
+              ),
+
+              // 🔥 SWITCH LOGIN / REGISTER
+              TextButton(
+                onPressed: () => setState(() {
+                  isLogin = !isLogin;
+                  errorMessage = null;
+                }),
+                child: Text(isLogin ? "Create account" : "I have an account"),
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.g_mobiledata),
+                label: const Text("Sign in with Google"),
+                onPressed: () async {
+                  try {
+                    final user = await _authService.signInWithGoogle();
+                    if (user != null) {
+                      Navigator.pushReplacementNamed(context, '/home'); // 🔥 Go straight home
+                    }
+                  } catch (e) {
+                    setState(() => errorMessage = e.toString());
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-// import 'package:flutter/material.dart';
-
-// class LoginPage extends StatelessWidget {
-//   const LoginPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final emailController = TextEditingController();
-//     final passwordController = TextEditingController();
-
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Login')),
-//       body: Padding(
-//         padding: const EdgeInsets.all(24.0),
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           crossAxisAlignment: CrossAxisAlignment.stretch,
-//           children: [
-//             TextField(
-//               controller: emailController,
-//               decoration: const InputDecoration(
-//                 labelText: 'Email',
-//                 border: OutlineInputBorder(),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             TextField(
-//               controller: passwordController,
-//               obscureText: true,
-//               decoration: const InputDecoration(
-//                 labelText: 'Password',
-//                 border: OutlineInputBorder(),
-//               ),
-//             ),
-//             const SizedBox(height: 24),
-//             ElevatedButton(
-//               onPressed: () {
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   const SnackBar(content: Text('Dummy login pressed')),
-//                 );
-//               },
-//               child: const Text('Login'),
-//             ),
-//             const SizedBox(height: 16),
-//             ElevatedButton.icon(
-//               icon: const Icon(Icons.login),
-//               label: const Text('Sign in with Google'),
-//               style: ElevatedButton.styleFrom(
-//                 backgroundColor: Colors.white,
-//                 foregroundColor: Colors.black,
-//                 side: const BorderSide(color: Colors.grey),
-//               ),
-//               onPressed: () {
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   const SnackBar(content: Text('Dummy Google sign-in pressed')),
-//                 );
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-// to logout, use the following code:
-// FirebaseAuth.instance.signOut();
-// like this: example: on an elevated button
-// ElevatedButton(
-//   onPressed: () async {
-//     await FirebaseAuth.instance.signOut();
-//   },
-//   child: const Text('Logout'),
-// ),
-
-
-
-
-
-
-// study the code below and make sure you understand it
-
-// import 'package:flutter/material.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-
-// class LoginPage extends StatefulWidget {
-//   const LoginPage({super.key});
-
-//   @override
-//   State<LoginPage> createState() => _LoginPageState();
-// }
-
-// class _LoginPageState extends State<LoginPage> {
-//   final emailController = TextEditingController();
-//   final passwordController = TextEditingController();
-
-//   Future<void> _login() async {
-//     try {
-//       await FirebaseAuth.instance.signInWithEmailAndPassword(
-//         email: emailController.text.trim(),
-//         password: passwordController.text.trim(),
-//       );
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Login Failed: $e')),
-//       );
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Login')),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16),
-//         child: Column(
-//           children: [
-//             TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-//             TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
-//             const SizedBox(height: 16),
-//             ElevatedButton(onPressed: _login, child: const Text('Login')),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
