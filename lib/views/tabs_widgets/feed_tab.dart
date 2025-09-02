@@ -1,55 +1,67 @@
 import 'package:flutter/material.dart';
-import '../../widgets/post_model.dart';
+import 'package:provider/provider.dart';
+import '../../models/post_model.dart';
+import '../../widgets/post_card.dart';
+import '../../providers/post_provider.dart';
 
-/// Drop this file anywhere in your Flutter project and set `home: FeedTab()`
-/// in your MaterialApp to see it in action.
-class FeedTab extends StatelessWidget {
+class FeedTab extends StatefulWidget {
   const FeedTab({super.key});
 
   @override
+  State<FeedTab> createState() => _FeedTabState();
+}
+
+class _FeedTabState extends State<FeedTab> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    final postProvider = context.read<PostProvider>();
+    postProvider.fetchInitialFeed();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        postProvider.fetchMoreFeed();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ListView(
-      // padding: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(5),
-      children: [
-        ChirpPostCard(
-          post:ChirpPost(
-            userId: "user_123",
-            avatarUrl: 
-              'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=200',
-            displayName: "John Doe",
-            handle: "@johndoe",
-            timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-            text: "Beautiful sunset today 🌅",
-            mediaUrls: [
-              'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1080',
-              "https://picsum.photos/300/200?1"
-              ],
-            categories: ["#sunset", "#nature"],
-            replies: 12,
-            rechirps: 4,
-            votes: 87,
-            isFollowing: true,
-          ),
-        ),
-        SizedBox(height: 16),
-        ChirpPostCard(
-          post: ChirpPost(
-            userId: "user_123",
-            avatarUrl: "https://i.pravatar.cc/150?img=3",
-            displayName: "John Doe",
-            handle: "@johndoe",
-            timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-            text: "Beautiful sunset today 🌅",
-            mediaUrls: ["https://picsum.photos/300/200?1"],
-            categories: ["#sunset", "#nature"],
-            replies: 12,
-            rechirps: 4,
-            votes: 87,
-            isFollowing: true,
-          ),
-        ),
-      ],
+    final provider = context.watch<PostProvider>();
+    final posts = provider.feedPosts;
+
+    if (provider.isFeedLoading && posts.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (posts.isEmpty) {
+      return const Center(child: Text("No posts yet. Be the first to post!"));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => provider.fetchInitialFeed(),
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(5),
+        itemCount: posts.length + (provider.hasMoreFeed ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index < posts.length) {
+            final PostModel post = posts[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: PostCard(post: post),
+            );
+          } else {
+            return const Center(child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            ));
+          }
+        },
+      ),
     );
   }
 }

@@ -1,49 +1,17 @@
 import 'package:flutter/material.dart';
-
-// --- Model ---
-
-class ChirpPost {
-  final String userId;
-  final String avatarUrl;
-  final String displayName;
-  final String handle;
-  final DateTime timestamp;
-  final bool isFollowing;
-  final String text;
-  final List<String> mediaUrls;
-  final List<String> categories;
-  final int replies;
-  final int rechirps;
-  final int votes;
-
-  const ChirpPost({
-    required this.userId,
-    required this.avatarUrl,
-    required this.displayName,
-    required this.handle,
-    required this.timestamp,
-    required this.isFollowing,
-    required this.text,
-    this.mediaUrls = const [],
-    this.categories = const [],
-    required this.replies,
-    required this.rechirps,
-    required this.votes,
-  });
-}
-
+import '../models/post_model.dart';
 // --- Widgets ---
 
-class ChirpPostCard extends StatefulWidget {
-  final ChirpPost post;
+class PostCard extends StatefulWidget {
+  final PostModel post;
 
-  const ChirpPostCard({super.key, required this.post});
+  const PostCard({super.key, required this.post});
 
   @override
-  State<ChirpPostCard> createState() => _ChirpPostCardState();
+  State<PostCard> createState() => _PostCardState();
 }
 
-class _ChirpPostCardState extends State<ChirpPostCard>
+class _PostCardState extends State<PostCard>
     with SingleTickerProviderStateMixin {
   static const _brand = Color(0xFF3AA7FF);
   static const _borderRadius = 18.0;

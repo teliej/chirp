@@ -1,7 +1,11 @@
 import 'dart:io';
+import 'package:chirp/models/post_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../providers/post_provider.dart';
+import '../../providers/user_provider.dart';
 
 class CreatePostPage extends StatefulWidget {
   const CreatePostPage({super.key});
@@ -16,6 +20,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   final ImagePicker _picker = ImagePicker();
   final List<XFile> _images = <XFile>[]; // multiple image support
+  
 
   // Example categories/hashtags (multi-select)
   final List<String> _allCategories = <String>[
@@ -56,7 +61,21 @@ class _CreatePostPageState extends State<CreatePostPage> {
     }
   }
 
+
+
+
+
+
+
+
+
+
   Future<void> _handlePost() async {
+
+    final post = context.read<PostProvider>();
+    final userProvider = context.read<UserProvider>();
+    final currentUser = userProvider.currentUser!;
+
     if (!_hasContent) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Add a caption or at least one image')),
@@ -67,6 +86,25 @@ class _CreatePostPageState extends State<CreatePostPage> {
     setState(() => _isPosting = true);
 
     try {
+
+      final newPost = PostModel(
+        id: '', // Firestore will assign one
+        userId: currentUser.id,
+        avatarUrl: currentUser.avatarUrl,
+        displayName: currentUser.username,
+        handle: '@${currentUser.username.toLowerCase()}', // Example handle
+        timestamp: DateTime.now(),
+        isFollowing: false, // Might be ignored for your own posts
+        text: _captionController.text.trim(),
+        mediaUrls: _images.map((x) => x.path).toList(), // upload first to get real URLs
+        categories: _selectedCategories.toList(),
+        replies: 0,
+        rechirps: 0,
+        votes: 0,
+      );
+
+      await post.addPost(newPost);
+
       // 🔥 Replace with your backend/Firestore upload logic
       // Example payload you might send:
       final payload = {
@@ -84,7 +122,17 @@ class _CreatePostPageState extends State<CreatePostPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Posted successfully!')),
       );
-      Navigator.pop(context);
+
+
+      Navigator.pop(context); // return to previous screen
+
+      // reset state if staying on page
+      // _captionController.clear();
+      // _images.clear();
+      // _selectedCategories.clear();
+      // _customTagController.clear();
+
+
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,32 +141,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
     } finally {
       if (mounted) setState(() => _isPosting = false);
     }
-
-
-
-    // final caption = _captionController.text.trim();
-    // if (caption.isEmpty && _imageUrl == null) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text("Post cannot be empty")),
-    //   );
-    //   return;
-    // }
-
-    // final newPost = ChirpPost(
-    //   id: DateTime.now().millisecondsSinceEpoch.toString(),
-    //   caption: caption,
-    //   imageUrl: _imageUrl,
-    //   category: _selectedCategory,
-    //   createdAt: DateTime.now(),
-    //   userAvatar: "https://i.pravatar.cc/150?img=5",
-    //   username: "John Doe",
-    // );
-
-    // Navigator.pop(context, newPost); // return the new post
-
-
-
-
 
     /**
     USEAGE IN FEED PAGE
@@ -136,6 +158,13 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
     **/
   }
+
+
+
+
+
+
+
 
   Future<bool> _confirmDiscardIfNeeded() async {
     if (!_hasContent) return true;

@@ -1,31 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../widgets/post_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:provider/provider.dart';
-// import '../../providers/theme_provider.dart';
-
-// Profile data model for demonstration
-class UserProfile {
-  final String name;
-  final String handle;
-  final String avatarUrl;
-  final String bio;
-  final String link;
-  final int followers;
-  final int following;
-  final List<ChirpPost> posts;
-
-  const UserProfile({
-    required this.name,
-    required this.handle,
-    required this.avatarUrl,
-    required this.bio,
-    required this.link,
-    required this.followers,
-    required this.following,
-    required this.posts,
-  });
-}
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/post_provider.dart';
+import '../../models/user_model.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -37,67 +15,53 @@ class ProfileTab extends StatefulWidget {
 class _ProfileTabState extends State<ProfileTab>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
-  bool isGridView = true;
+  //new
+  // late UserModel user;
+  // late PostProvider postProvider;
+  // late UserProvider userProvider;
 
-  // Example profile and posts (replace with your backend data)
-  late final UserProfile profile;
+  bool isGridView = true;
+  //new
+  final ScrollController _scrollController = ScrollController();
+
+  // // Example profile and posts (replace with your backend data)
+  // late final UserModel currentUser;
+  
   @override
   bool get wantKeepAlive => true;
+
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    profile = UserProfile(
-      name: "John Doe",
-      handle: "@johndoe",
-      avatarUrl: "https://i.pravatar.cc/150?img=3",
-      bio: "Passionate about design, tech, and travel. Sharing my journey here ✨",
-      link: "johndoe.dev",
-      followers: 1200,
-      following: 350,
-      posts: [
-        ChirpPost(
-          userId: "user_123",
-          avatarUrl: "https://i.pravatar.cc/150?img=3",
-          displayName: "John Doe",
-          handle: "@johndoe",
-          timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-          text: "Beautiful sunset today 🌅",
-          mediaUrls: [
-            "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-            "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
-          ],
-          categories: ["#sunset", "#nature"],
-          replies: 12,
-          rechirps: 4,
-          votes: 87,
-          isFollowing: true,
-        ),
-        ChirpPost(
-          userId: "user_123",
-          avatarUrl: "https://i.pravatar.cc/150?img=3",
-          displayName: "John Doe",
-          handle: "@johndoe",
-          timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          text: "Exploring the city lights 🌃",
-          mediaUrls: [
-            "https://images.unsplash.com/photo-1465101178521-c1a9136a3b99",
-          ],
-          categories: ["#city", "#night"],
-          replies: 8,
-          rechirps: 2,
-          votes: 45,
-          isFollowing: true,
-        ),
-      ],
-    );
+
+    //new
+    final user = context.read<UserProvider>().currentUser;
+
+    if (user != null) {
+      context.read<PostProvider>().fetchInitialUserPosts(user.id);
+    }
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        final user = context.read<UserProvider>().currentUser;
+        if (user != null) {
+          context.read<PostProvider>().fetchMoreUserPosts(user.id);
+        }
+      }
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+    final postProvider = context.watch<PostProvider>();
+    final userProvider = context.read<UserProvider>();
+    final currentUser = userProvider.currentUser!;
 
     return DefaultTabController(
       length: 3,
@@ -109,7 +73,7 @@ class _ProfileTabState extends State<ProfileTab>
             pinned: true,
             elevation: 10,
             title: Text(
-              profile.name,
+              currentUser.name,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: theme.textTheme.bodyLarge?.color,
@@ -130,8 +94,8 @@ class _ProfileTabState extends State<ProfileTab>
                 fit: StackFit.expand,
                 children: [
                   CachedNetworkImage(
-                    imageUrl: profile.posts.isNotEmpty && profile.posts.first.mediaUrls.isNotEmpty
-                        ? profile.posts.first.mediaUrls.first
+                    imageUrl: currentUser.backgroundImageUrl.isNotEmpty
+                        ? currentUser.backgroundImageUrl
                         : "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(color: Colors.grey[300]),
@@ -162,7 +126,7 @@ class _ProfileTabState extends State<ProfileTab>
                             tag: "profile-avatar",
                             child: CircleAvatar(
                               radius: 40,
-                              backgroundImage: NetworkImage(profile.avatarUrl),
+                              backgroundImage: NetworkImage(currentUser.avatarUrl),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -171,14 +135,14 @@ class _ProfileTabState extends State<ProfileTab>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                profile.name,
+                                currentUser.name,
                                 style: theme.textTheme.bodyLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 22,
                                 ),
                               ),
                               Text(
-                                profile.handle,
+                                currentUser.username,
                                 style: theme.textTheme.bodyMedium
                               ),
                             ],
@@ -191,20 +155,21 @@ class _ProfileTabState extends State<ProfileTab>
               ),
             ),
           ),
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(profile.bio, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 14), maxLines: 5,),
+                  Text(currentUser.bio, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 14), maxLines: 5,),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(Icons.link, size: 16, color: theme.colorScheme.primary),
                       const SizedBox(width: 4),
                       Text(
-                        profile.link,
+                        currentUser.bioLink,
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           decoration: TextDecoration.underline,
@@ -215,9 +180,9 @@ class _ProfileTabState extends State<ProfileTab>
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildStat("Posts", profile.posts.length.toString(), theme),
-                      _buildStat("Followers", profile.followers.toString(), theme),
-                      _buildStat("Following", profile.following.toString(), theme),
+                      _buildStat("Posts", currentUser.posts.length.toString(), theme),
+                      _buildStat("Followers", currentUser.followers.toString(), theme),
+                      _buildStat("Following", currentUser.following.toString(), theme),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -252,8 +217,8 @@ class _ProfileTabState extends State<ProfileTab>
         body: TabBarView(
           controller: _tabController,
           children: [
-            _buildPostsTab(theme),
-            _buildMediaTab(theme),
+            _buildPostsTab(theme, postProvider, currentUser),
+            _buildMediaTab(theme, postProvider, currentUser),
             _buildCollectionsTab(theme),
           ],
         ),
@@ -261,17 +226,33 @@ class _ProfileTabState extends State<ProfileTab>
     );
   }
 
-  Widget _buildPostsTab(ThemeData theme) {
+  Widget _buildPostsTab(ThemeData theme, PostProvider postProvider, UserModel user) {
+
+    final posts = postProvider.getUserPosts(user.id);
+    final loading = postProvider.isUserLoading(user.id);
+
+    if (loading && posts.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (posts.isEmpty) {
+      return const Center(child: Text("No posts yet."));
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(
           children: [
             Flexible(
               child: ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.all(8),
-                itemCount: profile.posts.length,
+                itemCount: posts.length + (loading ? 1 : 0),
                 itemBuilder: (context, index) {
-                  final post = profile.posts[index];
+                  if (index == posts.length) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final post = posts[index];
                   return Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -316,8 +297,11 @@ class _ProfileTabState extends State<ProfileTab>
     );
   }
 
-  Widget _buildMediaTab(ThemeData theme) {
-    final allMedia = profile.posts.expand((p) => p.mediaUrls).toList();
+  Widget _buildMediaTab(ThemeData theme, PostProvider postProvider, UserModel user) {
+
+    final posts = postProvider.getUserPosts(user.id);
+
+    final allMedia = posts.expand((p) => p.mediaUrls).toList();
     return LayoutBuilder(
       builder: (context, constraints) {
         return Column(

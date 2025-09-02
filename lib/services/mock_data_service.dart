@@ -1,4 +1,4 @@
-import '../model/chat.dart';
+import '../models/chat_model.dart';
 import 'mock_loader.dart';
 
 class MockDataService {

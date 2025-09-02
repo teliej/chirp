@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/chat_page.dart';
-import '../../model/chat.dart';
+import '../../models/chat_model.dart';
 import '../../services/mock_data_service.dart';
 
 class ChatsTab extends StatefulWidget {

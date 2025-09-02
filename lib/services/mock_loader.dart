@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import '../model/chat.dart';
+import '../models/chat_model.dart';
 
 Future<Map<String, dynamic>> _loadJson() async {
   final jsonStr = await rootBundle.loadString('assets/mock_data.json');

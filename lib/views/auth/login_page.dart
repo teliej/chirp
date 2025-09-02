@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'verify_email_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -35,22 +34,27 @@ class _LoginPageState extends State<LoginPage> {
           // system may be using a cached currentUser
           await user.reload(); // refresh user state
           await user.sendEmailVerification();
-          Navigator.pushReplacementNamed(context, '/verify-email'),
+
+          if (!mounted) return; // ✅ Guard before navigation
+          Navigator.pushReplacementNamed(context, '/verify-email');
           return;
         }
 
         // Navigate to home if verified
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/home');
       } else {
         await _authService.register(email, password);
 
         // 🔥 After register, always go to verification page
-        Navigator.pushReplacementNamed(context, '/verify-email'),
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/verify-email');
       }
 
       setState(() => errorMessage = null); // clear errors
     } catch (e) {
       // 🔥 Show Firebase or custom errors in UI
+      if (!mounted) return; // ✅ Guard before setState
       setState(() {
         errorMessage = e.toString();
       });
@@ -137,12 +141,15 @@ class _LoginPageState extends State<LoginPage> {
                 icon: const Icon(Icons.g_mobiledata),
                 label: const Text("Sign in with Google"),
                 onPressed: () async {
+                  final ctx = context;
                   try {
                     final user = await _authService.signInWithGoogle();
-                    if (user != null) {
-                      Navigator.pushReplacementNamed(context, '/home'); // 🔥 Go straight home
+                    if (!mounted) return; // ✅ Guard before navigation
+                    if (user != null && ctx.mounted) {
+                      Navigator.pushReplacementNamed(ctx, '/home'); // 🔥 Go straight home
                     }
                   } catch (e) {
+                    if (!mounted) return; // ✅ Guard before setState
                     setState(() => errorMessage = e.toString());
                   }
                 },

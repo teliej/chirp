@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chirp/services/mock_data_service.dart';
-import '../../model/chat.dart';
+import '../../models/chat_model.dart';
 import '../../widgets/message_bubble.dart';
 
 
