@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:provider/provider.dart';
+// import '../../providers/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +13,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
@@ -21,6 +25,8 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return; // Stop if invalid inputs
 
+    final name = _nameController.text.trim();
+    final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -40,11 +46,28 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
+
+
+        // Load user data into UserProvider
+        // if (user != null){
+        //   if (!mounted) return; // ✅ Guard before context usage
+        //   await context.read<UserProvider>().loadUser(user.uid);
+        // }
+    
         // Navigate to home if verified
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/home');
+
+
+
       } else {
-        await _authService.register(email, password);
+        await _authService.register(email, password, username, name);
+
+        // final user = FirebaseAuth.instance.currentUser;
+        // if (user != null) {
+        //   if (!mounted) return;
+        //   await context.read<UserProvider>().loadUser(user.uid);
+        // }
 
         // 🔥 After register, always go to verification page
         if (!mounted) return;
@@ -77,6 +100,113 @@ class _LoginPageState extends State<LoginPage> {
                 style: const TextStyle(fontSize: 28),
               ),
               const SizedBox(height: 20),
+
+
+
+
+
+
+
+              // NAME + USERNAME (only when registering)
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 400),
+                switchInCurve: Curves.easeInOut,
+                switchOutCurve: Curves.easeInOut,
+                transitionBuilder: (child, animation) {
+                  final slideAnimation = Tween<Offset>(
+                    begin: const Offset(0, -0.1),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOut,
+                  ));
+
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: slideAnimation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: isLogin
+                    ? const SizedBox.shrink(key: ValueKey("login"))
+                    : AnimatedSize(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        child: Column(
+                          key: const ValueKey("register"),
+                          children: [
+                            // 🔥 NAME (appears first)
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: 1),
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                              builder: (context, value, child) => Opacity(
+                                opacity: value,
+                                child: Transform.translate(
+                                  offset: Offset(0, (1 - value) * -10), // slide down
+                                  child: child,
+                                ),
+                              ),
+                              child: TextFormField(
+                                controller: _nameController,
+                                decoration: const InputDecoration(labelText: "Name"),
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Name is required";
+                                  }
+                                  final nameRegex = RegExp(r"^[a-zA-Z\s]{2,}$");
+                                  if (!nameRegex.hasMatch(value)) {
+                                    return "Enter a valid name (letters only, min 2 chars)";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // 🔥 USERNAME (appears after delay)
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: 1),
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                              // add delay
+                              builder: (context, value, child) => Opacity(
+                                opacity: value,
+                                child: Transform.translate(
+                                  offset: Offset(0, (1 - value) * -10),
+                                  child: child,
+                                ),
+                              ),
+                              child: TextFormField(
+                                controller: _usernameController,
+                                decoration: const InputDecoration(labelText: "Username"),
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Username is required";
+                                  }
+                                  final usernameRegex =
+                                      RegExp(r"^[a-zA-Z][a-zA-Z0-9_]{2,15}$");
+                                  if (!usernameRegex.hasMatch(value)) {
+                                    return "Enter a valid username (3–16 chars, letters/numbers/underscore)";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+              ),
+
+
+
+
+
 
               // 🔥 EMAIL FIELD
               TextFormField(

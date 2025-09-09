@@ -60,8 +60,15 @@ class _ProfileTabState extends State<ProfileTab>
     super.build(context);
     final theme = Theme.of(context);
     final postProvider = context.watch<PostProvider>();
-    final userProvider = context.read<UserProvider>();
-    final currentUser = userProvider.currentUser!;
+    final userProvider = context.watch<UserProvider>();
+    final currentUser = userProvider.currentUser;
+
+    // Handle loading or null state
+    if (currentUser == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
     return DefaultTabController(
       length: 3,
@@ -84,10 +91,43 @@ class _ProfileTabState extends State<ProfileTab>
                 icon: Icon(Icons.settings, color: theme.textTheme.bodyLarge?.color),
                 onPressed: () {},
               ),
-              IconButton(
-                icon: Icon(Icons.more_vert, color: theme.textTheme.bodyLarge?.color),
-                onPressed: () {},
+              
+              PopupMenuButton<String>(
+                // color: Colors.grey[900], // 🔥 Background color of menu
+                // shape: RoundedRectangleBorder(
+                //   borderRadius: BorderRadius.circular(16), // 🔥 Rounded corners
+                // ),
+                icon: Icon(
+                  Icons.more_vert,
+                  color: theme.textTheme.bodyLarge?.color, // 🔥 Custom icon color
+                ),
+                onSelected: (value) {
+                  // Handle menu actions
+                  if (value == 'security') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("security clicked")),
+                    );
+                  } else if (value == 'logout') {
+                    userProvider.signOut();
+                    Navigator.pushReplacementNamed(context, '/login');
+
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text("Logged out")),
+                    // );
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'security',
+                    child: Text('Security'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Text('Logout'),
+                  ),
+                ],
               ),
+
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
@@ -187,7 +227,9 @@ class _ProfileTabState extends State<ProfileTab>
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/update-profile');
+                    },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

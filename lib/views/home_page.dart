@@ -122,7 +122,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
               actions: [
                 IconButton(
-                  onPressed: (){},
+                  onPressed: (){
+                      Navigator.pushNamed(context, '/search');
+                  },
                   icon: Icon(Icons.search))
               ],
             ),

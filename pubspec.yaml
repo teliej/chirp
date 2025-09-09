@@ -63,6 +63,9 @@ dependencies:
   smooth_page_indicator: ^1.2.0+3
   flutter_dotenv: ^6.0.0
 
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -74,7 +74,15 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
     final post = context.read<PostProvider>();
     final userProvider = context.read<UserProvider>();
-    final currentUser = userProvider.currentUser!;
+    // final currentUser = userProvider.currentUser!;
+
+    final currentUser = userProvider.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
 
     if (!_hasContent) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -206,6 +214,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
   Widget build(BuildContext context) {
     // final viewInsets = MediaQuery.of(context).viewInsets;
     final theme = Theme.of(context);
+    final userProvider = context.watch<UserProvider>();
+    final currentUser = userProvider.currentUser;
 
     return SafeArea(
       child: WillPopScope(
@@ -233,7 +243,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
               children: [
                 CircleAvatar(
                   radius: 15,
-                  backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=5'),
+                  backgroundImage: NetworkImage(currentUser != null ? currentUser.avatarUrl :'https://i.pravatar.cc/150?img=5'),
                 ),
                 SizedBox(width: 8),
                 Text(

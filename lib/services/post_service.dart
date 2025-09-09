@@ -44,7 +44,7 @@ class PostService {
 
 
 
-
+  //Error: [firebase_storage/object-not-found] Object 'uploads/userId/2024/6/uuid_filename.jpg' does not exist.
   Future<List<String>> uploadMedia(List<String> filePaths, String userId, {
     int limit = 3, // Upload 3 images at a time
   }) async {
@@ -61,7 +61,9 @@ class PostService {
         // Create unique path
         String ext = path.extension(file.path);
         String fileName =
-            'uploads/$userId/${DateTime.now().year}/${DateTime.now().month}/${Uuid().v4()}_$ext';
+            // 'uploads/$userId/${Uuid().v4()}$ext';
+            // 'uploads/$userId/${DateTime.now().year}/${DateTime.now().month}/${Uuid().v4()}_$ext';
+            'uploads/$userId/${DateTime.now().year}/${DateTime.now().month}/${Uuid().v4()}$ext';
         
         // Upload image
         UploadTask uploadTask = _storage.ref(fileName).putFile(file);

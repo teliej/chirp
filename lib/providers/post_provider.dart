@@ -92,8 +92,6 @@ import '../services/post_service.dart';
 
 
 
-
-
 class PostProvider with ChangeNotifier {
   final PostService _postService = PostService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -128,7 +126,7 @@ class PostProvider with ChangeNotifier {
   Future<void> fetchInitialFeed() async {
     if (_isFeedInitialized || _isFeedLoading) return; // Already loaded or loading
     _isFeedLoading = true;
-    notifyListeners();
+    // notifyListeners(); //no need to notify here yet - will wait until exception
 
     try {
       final posts = await _postService.fetchPosts(limit: _limit);
@@ -141,14 +139,14 @@ class PostProvider with ChangeNotifier {
       _isFeedInitialized = true; // Mark feed as loaded
     } finally {
       _isFeedLoading = false;
-      notifyListeners();
+      notifyListeners(); // notify only once
     }
   }
 
   Future<void> fetchMoreFeed() async {
     if (!_hasMoreFeed || _isFeedLoading) return;
     _isFeedLoading = true;
-    notifyListeners();
+    // notifyListeners();
 
     try {
       final posts = await _postService.fetchPosts(
@@ -183,10 +181,13 @@ class PostProvider with ChangeNotifier {
       return;
     }
 
-    _userLoading[userId] = true;
-    notifyListeners();
+    // _userLoading[userId] = true;
+    // notifyListeners();
 
     try {
+      
+      _userLoading[userId] = true; //new
+
       final query = _firestore
           .collection('posts')
           .where('userId', isEqualTo: userId)

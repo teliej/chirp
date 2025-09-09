@@ -17,14 +17,23 @@ class _FeedTabState extends State<FeedTab> {
   @override
   void initState() {
     super.initState();
-    final postProvider = context.read<PostProvider>();
-    postProvider.fetchInitialFeed();
+    
+    // final postProvider = context.read<PostProvider>();
+    // postProvider.fetchInitialFeed();
 
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        postProvider.fetchMoreFeed();
-      }
+    //NEW
+    // Delay fetching until the widget tree is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      postProvider.fetchInitialFeed();
+
+      _scrollController.addListener(() {
+        if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
+          postProvider.fetchMoreFeed();
+        }
+      });
+
     });
   }
 
@@ -65,3 +74,12 @@ class _FeedTabState extends State<FeedTab> {
     );
   }
 }
+
+
+
+
+
+// W/System  ( 4030): Ignoring header X-Firebase-Locale because its value was null.
+// W/LocalRequestInterceptor( 4030): Error getting App Check token; using placeholder token instead. Error: com.google.firebase.FirebaseException: No AppCheckProvider installed.
+
+

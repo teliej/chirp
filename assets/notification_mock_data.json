@@ -1,0 +1,11 @@
+{
+  "to": "YOUR_DEVICE_TOKEN",
+  "notification": {
+    "title": "New Mention!",
+    "body": "marie_88 mentioned you in a comment"
+  },
+  "data": {
+    "username": "marie_88",
+    "avatar": "https://i.pravatar.cc/150?img=2"
+  }
+}
