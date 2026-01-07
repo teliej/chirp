@@ -30,4 +30,13 @@ It demonstrates my ability to **design real world mobile app** with clean layout
 * **Firebase**(backend)
 
 ## Screenshots
-This project is a starting point for a Flutter application.
+
+### Home
+| Light Mode | Dark Mode |
+|-----------|-----------|
+| ![](lib/assets/screenshots/feed_dark.jpg) | ![](lib/assets/screenshots/feed_light.jpg) |
+
+### Profile
+| Light Mode | Dark Mode |
+|-----------|-----------|
+| ![](lib/assets/screenshots/profile_dark.jpg) | ![](lib/assets/chirp.mp4) |
