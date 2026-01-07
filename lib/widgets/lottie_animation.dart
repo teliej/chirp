@@ -1,3 +1,67 @@
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+
+
+
+
+class EmptyState extends StatelessWidget {
+  final String file;
+  final String label;
+  const EmptyState({super.key, required this.file, required this.label,});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Animation
+          Lottie.asset(
+            file,
+            width: 200,
+            height: 200,
+            fit: BoxFit.contain,
+          ),
+          Text(
+            label,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
 import 'dart:io';
 import 'package:chirp/widgets/post_card.dart';
 import 'package:flutter/foundation.dart';
@@ -285,7 +349,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final viewInsets = MediaQuery.of(context).viewInsets;
+    // // final viewInsets = MediaQuery.of(context).viewInsets;
     final theme = Theme.of(context);
     final userProvider = context.watch<UserProvider>();
     final currentUser = userProvider.currentUser;
@@ -305,7 +369,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
     });
 
 
-    return WillPopScope(
+    return SafeArea(
+      child: WillPopScope(
         onWillPop: _confirmDiscardIfNeeded,
         child: Scaffold(
           resizeToAvoidBottomInset: true,
@@ -328,7 +393,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             title: Row(
               children: [
           CircleAvatar(
-            radius: 20,
+            radius: 15,
             backgroundImage: NetworkImage(currentUser != null ? currentUser.avatarUrl! : 'https://i.pravatar.cc/150?img=5'),
           ),
           SizedBox(width: 8),
@@ -451,42 +516,43 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 ],
               );
             },
-                ),
 
-              const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-              // Category selection (multi-select chips) + custom tag
-              Text(
-                'Select Categories',
-                style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: theme.textTheme.bodyMedium?.color),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: -15,
-                children: [
-            ..._allCategories.map((category) {
-              final selected = _selectedCategories.contains(category);
-              return FilterChip(
-                label: Text(category),
-                selected: selected,
-                onSelected: (val) {
-                  setState(() {
-              if (val) {
-                _selectedCategories.add(category);
-              } else {
-                _selectedCategories.remove(category);
-              }
-                  });
-                },
-                selectedColor: theme.primaryColor.withOpacity(.5),
-                checkmarkColor: theme.textTheme.bodyLarge?.color,
-                backgroundColor: theme.scaffoldBackgroundColor,
-                labelStyle: TextStyle(
-                  color: theme.textTheme.bodyLarge?.color,
+                    // Category selection (multi-select chips) + custom tag
+                    Text(
+                      'Select Categories',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: theme.textTheme.bodyMedium?.color),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: -15,
+                      children: [
+                        ..._allCategories.map((category) {
+                          final selected = _selectedCategories.contains(category);
+                          return FilterChip(
+                            label: Text(category),
+                            selected: selected,
+                            onSelected: (val) {
+                              setState(() {
+                                if (val) {
+                                  _selectedCategories.add(category);
+                                } else {
+                                  _selectedCategories.remove(category);
+                                }
+                              });
+                            },
+                            selectedColor: theme.primaryColor.withOpacity(.5),
+                            checkmarkColor: theme.textTheme.bodyLarge?.color,
+                            backgroundColor: theme.scaffoldBackgroundColor,
+                            labelStyle: TextStyle(
+                              color: selected
+                                  ? theme.textTheme.bodyLarge?.color
+                                  : theme.textTheme.bodyLarge?.color,
                               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                             ),
                             side: BorderSide(color: selected ? Colors.transparent : theme.textTheme.bodyMedium?.color ?? Colors.grey),
@@ -540,11 +606,13 @@ class _CreatePostPageState extends State<CreatePostPage> {
           ),
 
           // Bottom toolbar that stays above the keyboard using bottomSheet
-          bottomSheet:  Container(
+          bottomSheet:  AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
             padding: EdgeInsets.only(
               left: 8,
               right: 8,
               top: 6,
+              bottom: MediaQuery.of(context).viewInsets.bottom, // push above keyboard
             ),
             decoration: BoxDecoration(
               color: theme.scaffoldBackgroundColor,
@@ -671,7 +739,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
           ),
         ),
-      // ),
+      ),
     );
   }
 
@@ -702,4 +770,5 @@ Notes:
 - Replace _handlePost() body with backend upload logic.
 - uploading images, read file with File(x.path) and send to storage (e.g., Firebase Storage), then store URLs with caption/categories.
 - in case of needed camera capture: await _picker.pickImage(source: ImageSource.camera);
+*/
 */

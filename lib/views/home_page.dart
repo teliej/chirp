@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/theme_provider.dart';
+
 import 'tabs_widgets/feed_tab.dart';
 import 'tabs_widgets/chat_tab.dart';
 import 'tabs_widgets/profile_tab.dart';
 import 'tabs_widgets/notifications_tab.dart';
 import 'tabs_widgets/create_post_page.dart';
-import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
+
 
 
 
@@ -16,8 +20,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+
+
+
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
 
   int _lastIndex = 0; // to track previous tab
 
@@ -41,15 +49,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
 
-
-
-
-
   final List<String> tabName = ['Chirp', 'Chat', 'Post','Notification', 'Profile'];
+
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // keep transparent, content goes behind
+          statusBarIconBrightness:
+              theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: theme.scaffoldBackgroundColor,
+          systemNavigationBarIconBrightness:
+              theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        ),
+      );
+    });
 
 
     floatAction(int pageIndex){
@@ -57,10 +75,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         case 0:
           return FloatingActionButton(
             onPressed: () {
-              // Provider.of<ThemeProvider>(context, listen: false).isDarkMode
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   const SnackBar(content: Text('Start a new chat')),
-              // );
               Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
             },
             // backgroundColor: theme.colorScheme.primary,
@@ -92,7 +106,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           return FloatingActionButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Search notifications')),
+                  const SnackBar(content: Text('Search notifications comming soon!')),
                 );
               },
               backgroundColor: theme.colorScheme.primary,
@@ -110,6 +124,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       // extendBody: true,
       body: TabBarView(
         controller: _tabController,
+        physics: const NeverScrollableScrollPhysics(),
         children: [
         Scaffold(
             appBar: AppBar(
@@ -217,6 +232,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             indicator: DotIndicator(color: theme.colorScheme.primary),
             // indicatorSize: TabBarIndicatorSize.label,
             // unselectedLabelColor: theme.unselectedWidgetColor,
+            dividerColor: Colors.transparent,
             unselectedLabelColor: theme.textTheme.bodyLarge?.color,
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
             onTap: (index) {
@@ -228,11 +244,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 );
               }
             },
-            tabs: const [
+            tabs: [
               Icon(Icons.home),
               Icon(Icons.chat),
-              Icon(Icons.add_circle_outline),
-              Icon(Icons.notifications_active_outlined),
+              // Icon(Icons.add_box_outlined),
+              Icon(Icons.add_circle_outline_outlined, size: 40),
+
+              // Icon(Icons.add_circle_outline, color: theme.primaryColor, size: 40,),
+              // Stack(
+              //   clipBehavior: Clip.none,
+              //   alignment: Alignment.center,
+              //   children: [
+              //     SizedBox(),
+              //     Positioned(
+              //       bottom: -15,
+              //       child: Icon(Icons.add_circle_outline, color: theme.primaryColor, size: 40,),
+              //     ),
+              //   ]
+              // ),
+              
+              Icon(Icons.notifications_active),
               Icon(Icons.person),
             ],
           ),

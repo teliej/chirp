@@ -69,7 +69,7 @@ class MessageBubble extends StatelessWidget {
                 ),
                 child: Text(
                   message,
-                  style: TextStyle(color: textColor, fontSize: 16),
+                  style: TextStyle(color: textColor, fontSize: 16, overflow: TextOverflow.visible),
                   softWrap: true, // ✅ wrap text when long
                 ),
               ),

@@ -65,6 +65,18 @@ dependencies:
 
   # Notifications
   flutter_local_notifications: ^17.0.0
+
+  # lottie video animations
+  lottie: ^3.1.0
+  
+  # location
+  geolocator: ^10.0.0
+
+  # share
+  share_plus: ^12.0.0
+
+  # url launcher
+  url_launcher: ^6.2.1
   
 dev_dependencies:
   flutter_test:
@@ -91,6 +103,10 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/mock_data.json
+    - assets/empty.json
+    - assets/emptyState.json
+    - assets/success.json
+    - assets/error.json
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

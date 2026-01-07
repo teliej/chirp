@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../models/user_model.dart';
+import '../models/user/user_model.dart';
 import 'user_service.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import 'package:flutter/foundation.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final UserService _userService = UserService();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<UserModel?> register(String email, String password, String username, String name) async {
     try {
@@ -27,26 +30,16 @@ class AuthService {
         username: username,
         name: name,
         email: email,
-        avatarUrl: '',
-        backgroundImageUrl: '',
-        bio: '',
-        bioLink: '',
-        followers: 0,
-        following: 0,
-        interests: [],
-        posts: [],
-        savedPosts: [],
-        isVerified: false,
-        role: "user",
+        isVerified: false, // deal with this later
+        // role: "user",
         createdAt: DateTime.now(),
-        updatedAt: null,
+        updatedAt: DateTime.now(),
         lastActive: DateTime.now(),
-        location: null,
       );
 
-      await _userService.createUser(newUser);
-
       await firebaseUser.sendEmailVerification();
+      await _userService.createUser(newUser);
+      await _userService.setupUserFCM(firebaseUser.uid);
       return newUser;
     } on FirebaseAuthException catch (e) {
       debugPrint("problem with auth service register");
@@ -79,23 +72,16 @@ class AuthService {
           name: firebaseUser.displayName ?? '',
           email: firebaseUser.email ?? '',
           avatarUrl: firebaseUser.photoURL ?? '',
-          backgroundImageUrl: '',
-          bio: '',
-          bioLink: '',
-          followers: 0,
-          following: 0,
-          interests: [],
-          posts: [],
-          savedPosts: [],
-          isVerified: false,
-          role: "user",
+          isVerified: false,  // deal with this later
+          // role: "user",
           createdAt: DateTime.now(),
-          updatedAt: null,
+          updatedAt: DateTime.now(),
           lastActive: DateTime.now(),
-          location: null,
         ));
         userDoc = await _userService.getUser(firebaseUser.uid);
       }
+
+      await _userService.setupUserFCM(firebaseUser.uid);
       return userDoc;
     } on FirebaseAuthException catch (e) {
       debugPrint("problem with auth service sign in");
@@ -104,8 +90,11 @@ class AuthService {
   }
 
   Future<UserModel?> signInWithGoogle() async {
+    
+    await _googleSignIn.signOut(); // forget previous account
+
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 
       final googleAuth = await googleUser.authentication;
@@ -127,24 +116,16 @@ class AuthService {
           name: firebaseUser.displayName ?? '',
           email: firebaseUser.email ?? '',
           avatarUrl: firebaseUser.photoURL ?? '',
-          backgroundImageUrl: '',
-          bio: '',
-          bioLink: '',
-          followers: 0,
-          following: 0,
-          interests: [],
-          posts: [],
-          savedPosts: [],
           isVerified: false,
-          role: "user",
+          // role: "user",
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           lastActive: DateTime.now(),
-          location: null,
         );
         await _userService.createUser(userDoc);
       }
 
+      unawaited(_userService.setupUserFCM(firebaseUser.uid));
       return userDoc;
     } on FirebaseAuthException catch (e) {
       debugPrint("problem with auth service google sign in");
@@ -154,6 +135,17 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    try {
+      await user.delete();
+    } catch (e) {
+      debugPrint("auth_service deleteAccount error: $e");
+      rethrow;
+    }
   }
 
   String _handleAuthError(FirebaseAuthException e) {

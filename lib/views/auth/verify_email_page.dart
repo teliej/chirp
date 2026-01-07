@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+
 
 class VerifyEmailPage extends StatefulWidget {
   const VerifyEmailPage({super.key});
@@ -56,6 +58,21 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   @override
   Widget build(BuildContext context) {
     final email = _auth.currentUser?.email ?? '';
+    final theme = Theme.of(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // keep transparent, content goes behind
+          statusBarIconBrightness:
+              theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: theme.scaffoldBackgroundColor,
+          systemNavigationBarIconBrightness:
+              theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        ),
+      );
+    });
+
 
     return Scaffold(
       appBar: AppBar(title: const Text("Verify Your Email")),
@@ -80,42 +97,60 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                   style: TextStyle(color: Colors.red),
                 ),
 
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: canResendEmail && !loading
-                    ? _resendVerificationEmail
-                    : null,
-                child: loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Resend Email"),
+              const SizedBox(height: 100),
+
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: canResendEmail && !loading
+                      ? _resendVerificationEmail
+                      : null,
+                  child: loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Resend Email"),
+                ),
               ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  await _checkVerification();
-                  if (isEmailVerified) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Email verified!')),
-                    );
-                    // Navigate to your main app/home
-                    Navigator.pushReplacementNamed(context, '/home');
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Email not verified yet. Please check again.')),
-                    );
-                  }
-                },
-                child: const Text("Continue"),
+
+              const SizedBox(height: 15),
+
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await _checkVerification();
+                    if (isEmailVerified) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Email verified!')),
+                      );
+                      // Navigate to your main app/home
+                      Navigator.pushReplacementNamed(context, '/home');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content:
+                                Text('Email not verified yet. Please check again.')),
+                      );
+                    }
+                  },
+                  child: const Text("Continue"),
+                ),
               ),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () async {
-                  await _auth.signOut();
-                  Navigator.pushReplacementNamed(context, '/login');
-                },
-                child: const Text("Logout"),
+
+              const SizedBox(height: 5),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(''),
+                  TextButton(
+                  onPressed: () async {
+                    await _auth.signOut();
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: const Text("Logout"),
+                ),]
               ),
             ],
           ),

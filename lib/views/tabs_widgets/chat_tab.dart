@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../screens/chat_page.dart';
-import '../../models/chat_model.dart';
+import '../../models/chat/chat_model.dart';
 import '../../services/mock_data_service.dart';
+import '../../widgets/lottie_animation.dart';
+
 
 class ChatsTab extends StatefulWidget {
   const ChatsTab({super.key});
@@ -10,8 +12,13 @@ class ChatsTab extends StatefulWidget {
   State<ChatsTab> createState() => _ChatsTabState();
 }
 
-class _ChatsTabState extends State<ChatsTab> {
+class _ChatsTabState extends State<ChatsTab> 
+    with AutomaticKeepAliveClientMixin {
   String selectedFilter = 'All';
+
+
+  @override
+  bool get wantKeepAlive => true;
 
   List<Chat> filterChats(String filterName, List<Chat> allChats) {
     switch (filterName) {
@@ -42,6 +49,7 @@ class _ChatsTabState extends State<ChatsTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     final chats = MockDataService().chats;
 
@@ -69,6 +77,7 @@ class _ChatsTabState extends State<ChatsTab> {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
               height: 50,
@@ -115,84 +124,92 @@ class _ChatsTabState extends State<ChatsTab> {
           ],
         ),
 
-        ...filteredChats.map((chat) {
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-            leading: GestureDetector(
-              onTap: () => _sendPopup(context, chat),
-              child: CircleAvatar(
-                backgroundColor: theme.hintColor,
-                child: Icon(Icons.person, color: theme.scaffoldBackgroundColor),
-              ),
-            ),
-            title: Text(
-              chat.displayName,
-              style: theme.textTheme.bodyLarge,
-            ),
-            subtitle: Text(
-              chat.lastMessage.content,
-              style: theme.textTheme.bodyMedium,
-            ),
-            trailing: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  chat.lastMessage.formattedTime,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: chat.unreadCount > 0
-                        ? theme.colorScheme.primary
-                        : theme.hintColor,
+        if (filteredChats.isNotEmpty)
+          ...filteredChats.map((chat) {
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                leading: GestureDetector(
+                  onTap: () => _sendPopup(context, chat),
+                  child: CircleAvatar(
+                    backgroundColor: theme.hintColor,
+                    child: Icon( Icons.person, color: theme.scaffoldBackgroundColor),
                   ),
                 ),
-                const SizedBox(height: 5),
-                SizedBox(
-                  width: 70,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (chat.isMuted) ...[
-                        Icon(Icons.notifications_off_sharp, size: 18, color: theme.hintColor),
-                        const SizedBox(width: 2),
-                      ],
-                      if (chat.isPinned) ...[
-                        Icon(Icons.push_pin, size: 18, color: theme.hintColor),
-                        const SizedBox(width: 2),
-                      ],
-                      if (chat.unreadCount > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            "${chat.unreadCount}",
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: theme.scaffoldBackgroundColor,
+                title: Text(
+                  chat.displayName,
+                  style: theme.textTheme.bodyLarge,
+                ),
+                subtitle: Text(
+                  chat.lastMessage.content,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                trailing: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      chat.lastMessage.formattedTime,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: chat.unreadCount > 0
+                            ? theme.colorScheme.primary
+                            : theme.hintColor,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    SizedBox(
+                      width: 70,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (chat.isMuted) ...[
+                            Icon(Icons.notifications_off_sharp, size: 18, color: theme.hintColor),
+                            const SizedBox(width: 2),
+                          ],
+                          if (chat.isPinned) ...[
+                            Icon(Icons.push_pin, size: 18, color: theme.hintColor),
+                            const SizedBox(width: 2),
+                          ],
+                          if (chat.unreadCount > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                "${chat.unreadCount}",
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: theme.scaffoldBackgroundColor,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ChatPage(
-                    displayName: chat.displayName,
-                    chatId: chat.chatId,
-                  ),
-                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatPage(
+                        displayName: chat.displayName,
+                        chatId: chat.chatId,
+                      ),
+                    ),
+                  );
+                },
               );
-            },
-          );
-        }),
+            }),
+          if (filteredChats.isEmpty)
+            Center(
+              child: EmptyState(
+                file: 'assets/emptyState.json',
+                label: "No Messages!"
+              ),
+            ) 
       ],
     );
   }
@@ -250,14 +267,53 @@ class CustomTextInput extends StatelessWidget {
         fillColor: theme.inputDecorationTheme.fillColor,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: const BorderSide(color: Colors.transparent),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: const BorderSide(color: Colors.transparent),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none
         ),
       ),
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// TextField above doesn't have controller or onchanged and onsubmitted functions
+// like the one below
+
+// TextField(
+//   controller: _controller,
+//   onChanged: _onSearchChanged,
+//   onSubmitted: _onSubmitSearch,
+//   decoration: InputDecoration(
+//     hintText: 'Search',
+//     hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+//     labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
+//     filled: true,
+//     fillColor: theme.inputDecorationTheme.fillColor,
+//     prefixIcon: Icon(Icons.search, color: theme.textTheme.bodyMedium?.color),
+//     suffixIcon: _controller.text.isNotEmpty
+//         ? IconButton(
+//             icon: Icon(Icons.clear, color: theme.textTheme.bodyMedium?.color),
+//             onPressed: _clearSearch,
+//           )
+//         : null,
+//     border: OutlineInputBorder(
+//       borderRadius: BorderRadius.circular(12),
+//       borderSide: BorderSide.none,
+//     ),
+//   ),
+// ),

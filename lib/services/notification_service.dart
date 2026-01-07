@@ -54,3 +54,8 @@ class NotificationService {
     );
   }
 }
+
+
+
+
+// this code deals with notifications locally on the device using flutter_local_notifications package

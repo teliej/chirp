@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../models/post_model.dart';
+import '../models/post/post_model.dart';
 import 'package:uuid/uuid.dart'; // for generating unique IDs
 import 'dart:io'; // gives you File
 import 'package:path/path.dart' as path;
@@ -17,7 +17,7 @@ class PostService {
 
 
   // Future<List<PostModel>> getAllPosts() async {
-  //   final snapshot = await _posts.orderBy('timestamp', descending: true).get();
+  //   final snapshot = await _posts.orderBy('createdAt', descending: true).get();
   //   return snapshot.docs
   //       .map((doc) => PostModel.fromMap(doc.data(), doc.id))
   //       .toList();
@@ -30,7 +30,7 @@ class PostService {
     DocumentSnapshot? startAfter,
     int limit = 5,
   }) async {
-    Query query = _posts.orderBy('timestamp', descending: true).limit(limit);
+    Query query = _posts.orderBy('createdAt', descending: true).limit(limit);
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
@@ -66,11 +66,17 @@ class PostService {
             'uploads/$userId/${DateTime.now().year}/${DateTime.now().month}/${Uuid().v4()}$ext';
         
         // Upload image
-        UploadTask uploadTask = _storage.ref(fileName).putFile(file);
-        TaskSnapshot snapshot = await uploadTask;
-        
-        // Get download URL
-        return await snapshot.ref.getDownloadURL();
+        try {
+          UploadTask uploadTask = _storage.ref(fileName).putFile(file);
+          TaskSnapshot snapshot = await uploadTask;
+          
+          // Get download URL
+          return await snapshot.ref.getDownloadURL();
+        } catch (e) {
+          debugPrint('❌ Failed to upload image: $e');
+          // return await snapshot.ref.getDownloadURL();
+          return 'https://picsum.photos/300/200'; // or handle error as needed
+        } 
       }));
 
       uploadedUrls.addAll(results);

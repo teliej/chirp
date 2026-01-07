@@ -1,13 +1,30 @@
 {
   "chats": [
     {
+      "chatId": "user122@wa",
+      "displayName": "Nike",
+      "profileImage": "https://example.com/profiles/john.jpg",
+      "lastMessage": {
+        "messageId": "msg000",
+        "senderId": "user122@wa",
+        "content": "really?",
+        "type": "text",
+        "timestamp": 1725495500,
+        "status": "read"
+      },
+      "unreadCount": 1,
+      "isPinned": true,
+      "archived": false,
+      "isMuted": false
+    },
+    {
       "chatId": "user123@wa",
       "displayName": "John Doe",
       "profileImage": "https://example.com/profiles/john.jpg",
       "lastMessage": {
         "messageId": "msg001",
         "senderId": "user123@wa",
-        "content": "Hey, what's up?",
+        "content": "Is the app, ready?",
         "type": "text",
         "timestamp": 1725403488,
         "status": "read"
@@ -19,12 +36,12 @@
     },
     {
       "chatId": "group456@wa",
-      "displayName": "John Doe",
+      "displayName": "Fan Group",
       "profileImage": "https://example.com/profiles/group.jpg",
       "lastMessage": {
         "messageId": "msg002",
         "senderId": "user789@wa",
-        "content": "~ Assignment will be submited at 9am tomorrow",
+        "content": "~ applications will be submited at 9am tomorrow",
         "type": "text",
         "timestamp": 1725404000,
         "status": "delivered"
@@ -33,9 +50,116 @@
       "isPinned": true,
       "archived": false,
       "isMuted": true
+    },
+    {
+      "chatId": "user124@wa",
+      "displayName": "Teliej",
+      "profileImage": "https://example.com/profiles/john.jpg",
+      "lastMessage": {
+        "messageId": "msg004",
+        "senderId": "user124@wa",
+        "content": "Hey, what's up?",
+        "type": "text",
+        "timestamp": 1725403488,
+        "status": "read"
+      },
+      "unreadCount": 1,
+      "isPinned": false,
+      "archived": false,
+      "isMuted": false
     }
   ],
   "messages": {
+    "user122@wa": [ 
+      {
+        "messageId": "msg000",
+        "senderId": "me",
+        "content": "Hey Nike, are you coming to the game tonight?",
+        "type": "text",
+        "timestamp": 1725403400,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg001",
+        "senderId": "user122@wa",
+        "content": "Hey! Yeah, thinking about it.",
+        "type": "text",
+        "timestamp": 1725403452,
+        "status": "read"
+      },
+      {
+        "messageId": "msg001",
+        "senderId": "user122@wa",
+        "content": "What time does it start again?",
+        "type": "text",
+        "timestamp": 1725403452,
+        "status": "read"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "me",
+        "content": "Kickoff's at 7:30. You bringing anyone?",
+        "type": "text",
+        "timestamp": 1725403510,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg003",
+        "senderId": "user122@wa",
+        "content": "Probably just Sam. He's been dying to see this matchup.",
+        "type": "text",
+        "timestamp": 1725403578,
+        "status": "read"
+      },
+      {
+        "messageId": "msg004",
+        "senderId": "me",
+        "content": "Haha nice. Weather's supposed to be perfect too, clear skies for once.",
+        "type": "text",
+        "timestamp": 1725403642,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg005",
+        "senderId": "user122@wa",
+        "content": "Finally! Last time it rained so hard my fries turned into soup 😭",
+        "type": "text",
+        "timestamp": 1725403760,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg002",
+        "senderId": "me",
+        "content": "LOL I remember that you tried to use your hoodie as an umbrella 😂",
+        "type": "text",
+        "timestamp": 1725403905,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg006",
+        "senderId": "user122@wa",
+        "content": "That day was the worst!!!",
+        "type": "text",
+        "timestamp": 1725404010,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg007",
+        "senderId": "me",
+        "content": "yeah, and funny though 😂",
+        "type": "text",
+        "timestamp": 1725404100,
+        "status": "sent"
+      },
+      {
+        "messageId": "msg009",
+        "senderId": "user122@wa",
+        "content": "really?",
+        "type": "text",
+        "timestamp": 1725404210,
+        "status": "sent"
+      }
+    ],
     "user123@wa": [ 
       {
         "messageId": "msg001",

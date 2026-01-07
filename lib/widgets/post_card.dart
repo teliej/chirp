@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import '../models/post_model.dart';
+import 'dart:io';
+import '../models/post/post_model.dart';
+import '../views/screens/user_profile_page.dart';
+
+
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 // --- Widgets ---
 
 class PostCard extends StatefulWidget {
   final PostModel post;
+  final bool isPreview;
 
-  const PostCard({super.key, required this.post});
+  const PostCard({super.key, required this.post, this.isPreview = false});
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -28,7 +35,7 @@ class _PostCardState extends State<PostCard>
   void initState() {
     super.initState();
     voted = false;
-    voteCount = widget.post.votes;
+    voteCount = widget.post.likeCount;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 250),
@@ -56,7 +63,7 @@ class _PostCardState extends State<PostCard>
       ..reverse();
   }
 
-  String get timeAgo => _shortTimeAgo(widget.post.timestamp);
+  String get timeAgo => _shortTimeAgo(widget.post.createdAt);
 
   String _shortTimeAgo(DateTime date) {
     final now = DateTime.now();
@@ -77,6 +84,9 @@ class _PostCardState extends State<PostCard>
     final theme = Theme.of(context);
     final post = widget.post;
     final tagLabel = post.categories.isNotEmpty ? post.categories.first : null;
+    // final userProvider = context.watch<UserProvider>();
+    // final UserModel user = userProvider.getUserById(post.userId);
+    // final isFollowing = userModel.isUserFollowing(post.userId);
 
     return Container(
       decoration: BoxDecoration(
@@ -96,11 +106,9 @@ class _PostCardState extends State<PostCard>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _PostHeader(
-              avatarUrl: post.avatarUrl,
-              displayName: post.displayName,
-              handle: post.handle,
+              postUserId: post.userId,
               timeAgo: timeAgo,
-              isFollowing: post.isFollowing,
+              isPreview: widget.isPreview
             ),
             if ((tagLabel ?? '').isNotEmpty)
               Padding(
@@ -110,7 +118,11 @@ class _PostCardState extends State<PostCard>
             const SizedBox(height: 10),
             Text(
               post.text,
-              style: theme.textTheme.bodyLarge?.copyWith(height: 1.35),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                height: 1.35,
+                overflow: TextOverflow.visible,    
+              ),
+              softWrap: true
             ),
             if (post.mediaUrls.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -127,10 +139,29 @@ class _PostCardState extends State<PostCard>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _ActionButton(icon: Icons.mode_comment_outlined, count: post.replies, onTap: () {}),
-                _ActionButton(icon: Icons.repeat, count: post.rechirps, onTap: () {}),
+                _ActionButton(
+                  icon: Icons.mode_comment_outlined, 
+                  count: widget.isPreview ? 0 : post.replyCount, 
+                  isPreview: widget.isPreview,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Comming soon!')),
+                    );
+                  }
+                ),
+
+                _ActionButton(
+                  icon: Icons.repeat, 
+                  count: widget.isPreview ? 0 : post.rechirpCount,
+                  isPreview: widget.isPreview,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Comming soon!')),
+                    );
+                  }
+                ),
                 GestureDetector(
-                  onTap: _toggleVote,
+                  onTap: widget.isPreview ? null : _toggleVote,
                   behavior: HitTestBehavior.opaque,
                   child: Row(
                     children: [
@@ -153,7 +184,16 @@ class _PostCardState extends State<PostCard>
                     ],
                   ),
                 ),
-                _ActionButton(icon: Icons.ios_share_outlined, count: null, onTap: () {}),
+                _ActionButton(
+                  icon: Icons.ios_share_outlined, 
+                  count: null, 
+                  isPreview: widget.isPreview,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Comming soon!')),
+                    );
+                  }
+                ),
               ],
             ),
           ],
@@ -163,24 +203,50 @@ class _PostCardState extends State<PostCard>
   }
 }
 
+
+
+
+
+
+
+
+
 class _PostHeader extends StatelessWidget {
-  final String avatarUrl;
-  final String displayName;
-  final String handle;
+  final String postUserId;
   final String timeAgo;
-  final bool isFollowing;
+  final bool isPreview;
 
   const _PostHeader({
-    required this.avatarUrl,
-    required this.displayName,
-    required this.handle,
+    required this.postUserId,
     required this.timeAgo,
-    required this.isFollowing,
+    required this.isPreview
   });
+
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final userProvider = context.watch<UserProvider>();
+    final user = userProvider.getUserById(postUserId);
+
+    if (user == null) {
+      // trigger async fetch if not already cached
+      context.watch<UserProvider>().fetchUser(postUserId);
+      return CircularProgressIndicator();
+    }
+
+    final String avatarUrl = user.avatarUrl ?? '';
+    final String displayName = user.name ?? 'Unknown';
+    final String handle = user.username;
+    
+
+    // final String avatarUrl = 'https://picsum.photos/300/200';
+    // final String displayName = 'Unknown';
+    // final String handle = 'username';
+    // // bool isFollowing = 
+
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -190,38 +256,74 @@ class _PostHeader extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      displayName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text('· $timeAgo',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      )),
-                ],
-              ),
-              Text(
-                handle,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
+          child: GestureDetector(
+        onTap: (){
+          if (!isPreview){
+            Navigator.push(
+          context,
+          MaterialPageRoute(
+          builder: (context) => UserProfilePage(userId: postUserId),
           ),
+            );
+          }
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+          children: [
+            Flexible(
+              child: Text(
+            displayName,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text('· $timeAgo',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+            )),
+          ],
+            ),
+            Text(
+          handle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.grey[600],
+          ),
+            ),
+          ],
         ),
-        OutlinedButton(
-          onPressed: () {},
+          )
+        ),
+        FutureBuilder<bool>(
+          future: userProvider.isUserFollowing(postUserId),
+          builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox(
+            width: 88,
+            height: 36,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ); // loading state (fixed size to avoid layout jumps)
+        }
+
+        // Use a local mutable variable inside a StatefulBuilder to provide
+        // instant optimistic UI feedback when the user taps follow/unfollow.
+        // It initializes from the async result, and toggles immediately on tap
+        // while the provider call runs in the background.
+        bool? localFollowing;
+        return StatefulBuilder(
+          builder: (context, setButtonState) {
+            localFollowing ??= snapshot.data!;
+            return OutlinedButton(
+          onPressed: isPreview ? null : () {
+            // optimistic UI update
+            setButtonState(() => localFollowing = !localFollowing!);
+            // inform provider (network/update happens inside)
+            userProvider.toggleFollowUser(postUserId);
+          },
           style: OutlinedButton.styleFrom(
             foregroundColor: theme.textTheme.bodyMedium?.color,
             side: BorderSide(color: Colors.grey.shade300),
@@ -230,7 +332,11 @@ class _PostHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: Text(isFollowing ? 'Unfollow' : 'Follow'),
+          child: Text(localFollowing! ? 'Unfollow' : 'Follow'),
+            );
+          },
+        );
+          },
         ),
       ],
     );
@@ -297,17 +403,22 @@ class _MediaCarousel extends StatelessWidget {
               itemCount: mediaUrls.length,
               onPageChanged: onPageChanged,
               itemBuilder: (context, index) {
-                return Image.network(
-                  mediaUrls[index],
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return Container(
-                      color: const Color(0xFFF1F5F9),
-                      child: const Center(child: CircularProgressIndicator()),
-                    );
-                  },
-                );
+                return mediaUrls[index].startsWith('http')
+                  ? Image.network(
+                    mediaUrls[index],
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        color: const Color(0xFFF1F5F9),
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    },
+                  )
+                  : Image.file(
+                    File(mediaUrls[index]),
+                    fit: BoxFit.cover,
+                  );
               },
             ),
           ),
@@ -365,15 +476,21 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final int? count;
   final VoidCallback onTap;
+  final bool isPreview;
 
-  const _ActionButton({required this.icon, this.count, required this.onTap});
+  const _ActionButton({
+    required this.icon, 
+    this.count, 
+    required this.onTap,
+    required this.isPreview
+  });
 
   @override
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme.bodyMedium;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
-      onTap: onTap,
+      onTap: isPreview ? null : onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: Row(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -105,24 +107,35 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _highlightSearchText(String text, String query) {
-    if (query.isEmpty) return Text(text);
+    final theme = Theme.of(context);
+
+    if (query.isEmpty) {
+      return Text(text,  style: theme.textTheme.bodyMedium);
+    } 
+
     final queryLower = query.toLowerCase();
     final textLower = text.toLowerCase();
 
-    if (!textLower.contains(queryLower)) return Text(text);
+    if (!textLower.contains(queryLower)) {
+      return Text(text,  style: theme.textTheme.bodyMedium);
+    }
 
     final start = textLower.indexOf(queryLower);
     final end = start + query.length;
 
     return RichText(
       text: TextSpan(
+        style: theme.textTheme.bodyMedium, // 👈 base style applied here
         children: [
-          TextSpan(text: text.substring(0, start), style: DefaultTextStyle.of(context).style),
+          TextSpan(text: text.substring(0, start)),
           TextSpan(
             text: text.substring(start, end),
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.blue, // 👈 keep your highlight color
+            ),
           ),
-          TextSpan(text: text.substring(end), style: DefaultTextStyle.of(context).style),
+          TextSpan(text: text.substring(end)),
         ],
       ),
     );
@@ -132,66 +145,128 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // keep transparent, content goes behind
+          statusBarIconBrightness:
+              theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: theme.scaffoldBackgroundColor,
+          systemNavigationBarIconBrightness:
+              theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+        ),
+      );
+    });
+
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _openFilterSort,
-          ),
-        ],
-      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔍 Search Bar
-            TextField(
-              controller: _controller,
-              onChanged: _onSearchChanged,
-              onSubmitted: _onSubmitSearch,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                filled: true,
-                fillColor: theme.inputDecorationTheme.fillColor,
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _controller.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: _clearSearch,
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+            Row(
+              children: [
+                // Back button (fixed size)
+                IconButton(
+                  icon: Icon(Icons.arrow_back, color: theme.textTheme.bodyMedium?.color),
+                  onPressed: () => Navigator.pop(context),
                 ),
-              ),
+
+                // 🔍 Search Bar (takes remaining space)
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    onChanged: _onSearchChanged,
+                    onSubmitted: _onSubmitSearch,
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                      labelStyle: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                      filled: true,
+                      fillColor: theme.inputDecorationTheme.fillColor,
+                      prefixIcon: Icon(Icons.search, color: theme.textTheme.bodyMedium?.color),
+                      suffixIcon: _controller.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear, color: theme.textTheme.bodyMedium?.color),
+                              onPressed: _clearSearch,
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Filter button (fixed size)
+                IconButton(
+                  icon: Icon(Icons.filter_list, color: theme.textTheme.bodyMedium?.color),
+                  onPressed: _openFilterSort,
+                ),
+              ],
             ),
+
+
             const SizedBox(height: 12),
 
             // 🕒 Recent Searches
-            if (_recentSearches.isNotEmpty)
+            if (_recentSearches.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: Text(
+                  "Recently",
+                  textAlign: TextAlign.left,
+                  style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(.5)),
+
+                )
+              ),
+
+              const SizedBox(height: 5),
+
               SizedBox(
                 height: 40,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.only(left: 20),
                   children: _recentSearches.map((search) {
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
                       child: ActionChip(
-                        label: Text(search),
+                        label: Text(
+                          search, 
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color,
+                            fontSize: 12),
+                        ),
+                        backgroundColor: theme.inputDecorationTheme.fillColor,
                         onPressed: () {
                           _controller.text = search;
                           _onSearchChanged(search);
                         },
+                        side: BorderSide(color: Colors.transparent),
                       ),
                     );
                   }).toList(),
                 ),
               ),
+            ],
+
             const SizedBox(height: 12),
 
+            // sugestions
+            if (_recentSearches.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: Text(
+                  "Suggestions",
+                  textAlign: TextAlign.left,
+                  style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(.5)),
+                )
+              ),
+              
+            const SizedBox(height: 5),
             // 📜 Search Results
             Expanded(
               child: AnimatedSwitcher(
@@ -199,18 +274,27 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: _filteredItems.isEmpty
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Icon(Icons.search_off, size: 80, color: Colors.grey),
-                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Icon(Icons.search_off, size: 90, color: theme.textTheme.bodyMedium?.color),
+                          ),
+                          const SizedBox(height: 10),
                           Text('No results found', style: theme.textTheme.bodyMedium),
                         ],
                       )
                     : ListView.builder(
                         key: ValueKey(_filteredItems.length),
+                        padding: EdgeInsets.symmetric(horizontal: 10),
                         itemCount: _filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = _filteredItems[index];
                           return ListTile(
+                            onTap: ()=> _onSubmitSearch(item),
+                            dense: true,
+                            minTileHeight: 20,
+                            // contentPadding: const EdgeInsets.symmetric(vertical: 5),
                             title: _highlightSearchText(item, _controller.text),
                           );
                         },

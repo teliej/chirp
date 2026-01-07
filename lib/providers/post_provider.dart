@@ -1,95 +1,7 @@
-// providers/post_provider.dart
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import '../models/post_model.dart';
+import '../models/post/post_model.dart';
 import '../services/post_service.dart';
-
-// class PostProvider extends ChangeNotifier {
-//   final PostService _postService = PostService();
-  
-//   List<PostModel> _posts = [];
-//   bool _hasMore = true;
-//   bool _isLoading = false;
-//   DocumentSnapshot? _lastDoc;
-
-//   List<PostModel> get posts => _posts;
-//   bool get hasMore => _hasMore;
-//   bool get isLoading => _isLoading;
-
-
-//   Future<void> fetchInitialPosts() async {
-//     if (_isLoading) return;
-//     _isLoading = true;
-//     notifyListeners();
-
-//     final newPosts = await _postService.fetchPosts(limit: 5);
-
-//     if (newPosts.isNotEmpty) {
-//       _posts = newPosts;
-//       _lastDoc = await _getLastDocument(newPosts.last.id);
-//     } else {
-//       _hasMore = false;
-//     }
-
-//     _isLoading = false;
-//     notifyListeners();
-//   }
-
-//   Future<void> fetchMorePosts() async {
-//     if (!_hasMore || _isLoading) return;
-
-//     _isLoading = true;
-//     notifyListeners();
-
-//     final newPosts = await _postService.fetchPosts(
-//       startAfter: _lastDoc,
-//       limit: 5,
-//     );
-
-//     if (newPosts.isNotEmpty) {
-//       _posts.addAll(newPosts);
-//       _lastDoc = await _getLastDocument(newPosts.last.id);
-//     } else {
-//       _hasMore = false;
-//     }
-
-//     _isLoading = false;
-//     notifyListeners();
-//   }
-
-//   Future<DocumentSnapshot?> _getLastDocument(String postId) async {
-//     final doc = await FirebaseFirestore.instance
-//         .collection('posts')
-//         .doc(postId)
-//         .get();
-//     return doc;
-//   }
-
-
-//   // Future<void> fetchPosts() async {
-//   //   _feedPosts = await PostService().getAllPosts();
-//   //   notifyListeners();
-//   // }
-
-
-//   Future<void> addPost(PostModel post) async {
-//     await PostService().createPost(post);
-//     _posts.insert(0, post);
-//     notifyListeners();
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
 
 
 class PostProvider with ChangeNotifier {
@@ -126,7 +38,7 @@ class PostProvider with ChangeNotifier {
   Future<void> fetchInitialFeed() async {
     if (_isFeedInitialized || _isFeedLoading) return; // Already loaded or loading
     _isFeedLoading = true;
-    // notifyListeners(); //no need to notify here yet - will wait until exception
+    // notifyListeners();
 
     try {
       final posts = await _postService.fetchPosts(limit: _limit);
@@ -139,7 +51,7 @@ class PostProvider with ChangeNotifier {
       _isFeedInitialized = true; // Mark feed as loaded
     } finally {
       _isFeedLoading = false;
-      notifyListeners(); // notify only once
+      notifyListeners();
     }
   }
 
@@ -181,17 +93,15 @@ class PostProvider with ChangeNotifier {
       return;
     }
 
-    // _userLoading[userId] = true;
-    // notifyListeners();
+    _userLoading[userId] = true;
+    notifyListeners();
+
 
     try {
-      
-      _userLoading[userId] = true; //new
-
       final query = _firestore
           .collection('posts')
           .where('userId', isEqualTo: userId)
-          .orderBy('timestamp', descending: true)
+          .orderBy('createdAt', descending: true)
           .limit(_limit);
 
       final lastDoc = _userLastDocs[userId];
