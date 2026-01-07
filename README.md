@@ -34,9 +34,9 @@ It demonstrates my ability to **design real world mobile app** with clean layout
 ### Home
 | Light Mode | Dark Mode |
 |-----------|-----------|
-| ![](https://github.com/teliej/chirp/main/assets/screenshots/feed_dark.jpg) | ![](https://github.com/teliej/chirp/main/app/assets/screenshots/feed_light.jpg) |
+| ![](https://github.com/teliej/chirp/main/assets/Screenshots/feed_dark.jpg) | ![](https://github.com/teliej/chirp/main/app/assets/Screenshots/feed_light.jpg) |
 
 ### Profile
 | Light Mode | Dark Mode |
 |-----------|-----------|
-| ![](chirp/lib/assets/screenshots/profile_dark.jpg) | ![](chirp/lib/assets/chirp.mp4) |
+| ![](chirp/lib/assets/Screenshots/profile_dark.jpg) | ![](chirp/lib/assets/chirp.mp4) |
