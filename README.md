@@ -32,13 +32,13 @@ It demonstrates my ability to **design real world mobile app** with clean layout
 ## Screenshots
 
 ### Home
+
 | Light Mode | Dark Mode |
-|-----------|-----------|
-| <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/feed_light.jpg" width="300"> 
- | <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/feed_dark.jpg" width="300"> 
- |
+|:-----------:|:-----------:|
+| <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/feed_light.jpg" width="300"> | <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/feed_dark.jpg" width="300"> |
 
 ### Profile
+
 | Light Mode | Dark Mode |
-|-----------|-----------|
-| <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/profile_dark.jpg" width="300">  | <img src="https://github.com/teliej/chirp/blob/main/assets/chirp.mp4" width="300">  |
+|:-----------:|:-----------:|
+| <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/profile_dark.jpg" width="300"> | <video src="https://github.com/teliej/chirp/blob/main/assets/chirp.mp4" width="300"> |
