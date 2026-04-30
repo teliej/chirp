@@ -39,4 +39,4 @@ It demonstrates my ability to **design real world mobile app** with clean layout
 
 | Profile | Video Demo |
 |:-----------:|:-----------:|
-| <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/profile_dark.jpg" width="300"> | <video src="https://github.com/teliej/chirp/blob/main/assets/chirp.mp4" width="300"> |
+| <img src="https://github.com/teliej/chirp/blob/main/assets/Screenshots/profile_dark.jpg" width="300"> | <video src="https://raw.githubusercontent.com/teliej/chirp/blob/main/assets/chirp.mp4" width="300"> |
